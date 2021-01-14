@@ -27,12 +27,12 @@ function App() {
   }
 
   useEffect(() => {
-    fetch('/PhotosDatabase.json?ver='+process.env.REACT_APP_UPDATE_DATE)
+    fetch('/PhotosDatabase.json?ver='+new Date().getTime())
     .then(response => response.json())
     .then((jsonData) => {
       // jsonData is parsed json object received from url
       for( let i=0, j=jsonData.photos.length; i < j; i++)
-        jsonData.photos[i].src += `?data=${process.env.REACT_APP_UPDATE_DATE}`
+        jsonData.photos[i].src += `?data=${jsonData.date}`
         
       setPhotos(jsonData.photos)
     })
