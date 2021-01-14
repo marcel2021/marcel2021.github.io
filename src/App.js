@@ -1,11 +1,11 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import Gallery from "react-photo-gallery";
 import Carousel, { Modal, ModalGateway } from "react-images";
-import { photos } from "./photos";
 
 function App() {
   const [currentImage, setCurrentImage] = useState(0);
   const [viewerIsOpen, setViewerIsOpen] = useState(false);
+  const [photos, setPhotos] = useState([])
 
   const openLightbox = useCallback((event, { photo, index }) => {
     setCurrentImage(index);
@@ -26,24 +26,41 @@ function App() {
       return 1;
   }
 
+  useEffect(() => {
+    fetch('/PhotosDatabase.json?ver='+process.env.REACT_APP_UPDATE_DATE)
+    .then(response => response.json())
+    .then((jsonData) => {
+      // jsonData is parsed json object received from url
+      for( let i=0, j=jsonData.photos.length; i < j; i++)
+        jsonData.photos[i].src += `?data=${process.env.REACT_APP_UPDATE_DATE}`
+        
+      setPhotos(jsonData.photos)
+    })
+    .catch((error) => {
+      // handle your errors here
+      console.error(error)
+    })
+  }, []);
+
   return (
-    <div>
-    <Gallery columns={setColumn} photos={photos} onClick={openLightbox} direction="column"/>
-    <ModalGateway>
-      {viewerIsOpen ? (
-        <Modal onClose={closeLightbox}>
-          <Carousel
-            currentIndex={currentImage}
-            views={photos.map(x => ({
-              ...x,
-              srcset: x.srcSet,
-              caption: x.title
-            }))}
-          />
-        </Modal>
-      ) : null}
-    </ModalGateway>
-  </div>
+      photos.length > 0 && 
+      <div>
+        <Gallery columns={setColumn} photos={photos} onClick={openLightbox} direction="column"/>
+        <ModalGateway>
+          {viewerIsOpen ? (
+            <Modal onClose={closeLightbox}>
+              <Carousel
+                currentIndex={currentImage}
+                views={photos.map(x => ({
+                  ...x,
+                  srcset: x.srcSet,
+                  caption: x.title
+                }))}
+              />
+            </Modal>
+          ) : null}
+        </ModalGateway>
+      </div>
   );
 }
 
